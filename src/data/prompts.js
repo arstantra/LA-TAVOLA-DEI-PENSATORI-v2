@@ -655,4 +655,28 @@ export function buildSystemPrompt(pensatoreId, altriCommensali, modalita, lingua
     contesto += altri.map(function(c) {
       return '- **' + c.nome + '** (' + c.territorio + ')'
     }).join('\n')
-    contesto += '\n\nConosci questi pensatori, le loro idee, e le tensioni intellettuali che potreste avere. Puoi rivolgerti a loro per nome. Puoi concordare, dissentire, costruire sulle loro idee o smontarle con rispetto intellettuale ma senza ti
+    contesto += '\n\nConosci questi pensatori, le loro idee, e le tensioni intellettuali che potreste avere. Puoi rivolgerti a loro per nome. Puoi concordare, dissentire, costruire sulle loro idee o smontarle con rispetto intellettuale ma senza timidezza.'
+  }
+
+  const modoAperta = '\n\n## Modalita: Tavola aperta\nIl tuo intervento si inserisce in una conversazione collettiva. Altri commensali potrebbero aver gia risposto. Puoi rispondere all\'utente, agli altri commensali, o a entrambi.'
+  const modoDiretta = '\n\n## Modalita: Dialogo diretto\nL\'utente sta parlando principalmente con te. Rispondi in modo diretto e personale, come in un dialogo a due.'
+  const modoConfronto = '\n\n## Modalita: Confronto esplicito\nSei impegnato in un dialogo serrato con uno degli altri commensali. Rispondi con piu acume critico del solito: questo e il momento del confronto diretto tra le vostre posizioni.'
+
+  const modoContesto = modalita === 'diretta' ? modoDiretta
+    : modalita === 'confronto' ? modoConfronto
+    : modoAperta
+
+  let linguaContesto = ''
+  if (lingua !== 'it') {
+    const linguaNome = (pensatore && pensatore.linguaNome) ? pensatore.linguaNome : 'inglese'
+    const linguaCodice = (pensatore && pensatore.linguaOriginale) ? pensatore.linguaOriginale : 'en'
+
+    if (linguaCodice === 'it') {
+      linguaContesto = '\n\n## Lingua\nRispondi in italiano: e gia la tua lingua madre.'
+    } else {
+      linguaContesto = '\n\n## Lingua (modalita lingua originale attiva)\nRispondi in ' + linguaNome + ' (' + linguaCodice + '): la tua lingua madre intellettuale. Le domande dell\'utente possono arrivare in italiano: comprendi l\'italiano ma rispondi nella tua lingua. Puoi citare anche in italiano se e il testo originale che stai commentando, ma la tua voce risponde in ' + linguaNome + '.'
+    }
+  }
+
+  return base + contesto + modoContesto + linguaContesto + REGISTRO_SESSIONE
+}

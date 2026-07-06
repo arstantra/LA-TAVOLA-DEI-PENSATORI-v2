@@ -172,4 +172,100 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
                 return (
                   <div
                     key={s.id}
-                    className="flex items-center gap-3 bg-stone-900/50 border border-stone-800 rounded-lg px-4 py-2.5 flex-
+                    className="flex items-center gap-3 bg-stone-900/50 border border-stone-800 rounded-lg px-4 py-2.5 flex-wrap"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-stone-200 truncate">{s.nome}</p>
+                      <p className="text-xs text-stone-500">
+                        {formattaData(s.data)} &middot; {nomi} &middot; {nInterventi} intervent{nInterventi === 1 ? 'o' : 'i'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => onRiprendi?.(s)}
+                        className="text-xs px-3 py-1.5 rounded border border-amber-800 text-amber-300 hover:bg-amber-950/40 hover:border-amber-600 transition-colors"
+                      >
+                        Riprendi
+                      </button>
+                      <button
+                        onClick={() => handleEsporta(s)}
+                        title="Scarica la trascrizione come testo"
+                        className="text-xs px-3 py-1.5 rounded border border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200 transition-colors"
+                      >
+                        Esporta
+                      </button>
+                      <button
+                        onClick={() => handleElimina(s.id)}
+                        title="Elimina la sessione dall'archivio"
+                        className="text-xs px-2 py-1.5 rounded border border-stone-800 text-stone-600 hover:border-red-800 hover:text-red-400 transition-colors"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Form pensatore custom */}
+        {mostraFormCustom && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-stone-900 rounded-xl border border-stone-700 w-full max-w-lg">
+              <FormPensatoreCustom
+                onAggiungi={aggiungiCustom}
+                onAnnulla={() => setMostraFormCustom(false)}
+              />
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer con selezione e pulsante */}
+      <footer className="sticky bottom-0 border-t border-stone-800 bg-stone-950/95 backdrop-blur px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            {selezionati.length === 0 ? (
+              <span className="text-stone-500 text-sm">Nessun partecipante selezionato</span>
+            ) : (
+              selezionati.map(p => (
+                <span
+                  key={p.id}
+                  className="inline-flex items-center gap-1.5 bg-amber-950/50 border border-amber-700/50 text-amber-200 text-xs rounded-full px-3 py-1"
+                >
+                  {p.nome}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleSelezione(p) }}
+                    className="text-amber-400 hover:text-red-400 leading-none"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))
+            )}
+          </div>
+          <button
+            onClick={() => pronti && onInizia(selezionati)}
+            disabled={!pronti}
+            className={[
+              'px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0',
+              pronti
+                ? 'bg-amber-600 hover:bg-amber-500 text-stone-950 cursor-pointer'
+                : 'bg-stone-800 text-stone-600 cursor-not-allowed',
+            ].join(' ')}
+          >
+            {selezionati.length < 2
+              ? `Seleziona ancora ${2 - selezionati.length}`
+              : `Inizia con ${selezionati.length} pensator${selezionati.length === 1 ? 'e' : 'i'}`}
+          </button>
+        </div>
+      </footer>
+
+      {/* Dichiarazione etica */}
+      <div className="text-center text-xs text-stone-600 px-6 pb-3">
+        Le voci sono sintetiche, modellate sui pensatori reali. Le parole sono generate da AI nello stile del loro pensiero. Non rappresentano le loro opinioni reali.
+      </div>
+    </div>
+  )
+}

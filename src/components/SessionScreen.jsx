@@ -587,4 +587,162 @@ export default function SessionScreen({
                           </button>
                         )}
                       </span>
-                      <p clas
+                      <p className={`${prosaCls} font-serif text-stone-200 whitespace-pre-wrap`}>
+                        {msg.testo}
+                      </p>
+                    </div>
+                  )
+                }
+                if (msg.tipo === 'sistema') {
+                  return (
+                    <div key={i} className="text-xs text-stone-600 italic text-center">
+                      {msg.testo}
+                    </div>
+                  )
+                }
+                return null
+              })}
+
+              {/* Intervento in corso */}
+              {messaggioStreaming && (
+                <div className={`flex flex-col gap-1 border-l-2 pl-3 ${bordoMap[messaggioStreaming.pensatore.id] || 'border-stone-700'}`}>
+                  <span className={`${nomeCls} uppercase font-medium ${coloreMap[messaggioStreaming.pensatore.id] || 'text-amber-300'}`}>
+                    {messaggioStreaming.pensatore.nome}
+                    <span className="text-stone-600 ml-2 font-normal animate-pulse">&#x25CF;</span>
+                  </span>
+                  <p className={`${prosaCls} font-serif text-stone-200 whitespace-pre-wrap`}>
+                    {messaggioStreaming.testo}
+                    <span className="animate-pulse text-stone-600">|</span>
+                  </p>
+                </div>
+              )}
+
+              {caricandoSegnali && (
+                <div className="text-xs text-stone-600 italic animate-pulse">
+                  I partecipanti valutano se chiedere la parola...
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Countdown dialogo autonomo */}
+          {countdownAuto !== null && (
+            <div className={`${larghezzaFeed} mx-auto w-full px-4 pb-2 flex items-center gap-3 text-xs`}>
+              <span className="text-stone-400">
+                La discussione prosegue tra <span className="text-stone-200 font-medium">{countdownAuto}s</span>
+              </span>
+              <button
+                onClick={toggleModalitaAutonoma}
+                className="px-2 py-0.5 rounded border border-stone-600 text-stone-400 hover:border-stone-400 hover:text-stone-200 transition-colors"
+              >
+                Sospendi
+              </button>
+            </div>
+          )}
+
+          {/* Input moderatore */}
+          <div className="border-t border-stone-800 px-4 pt-3 pb-2 flex-shrink-0">
+            <div className={`${larghezzaFeed} mx-auto w-full flex gap-2 items-end`}>
+              <VoiceInput
+                onTrascrizione={onTrascrizione}
+                lingua="it"
+                disabled={bloccato}
+              />
+              <textarea
+                value={inputTesto}
+                onChange={e => setInputTesto(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  countdownAuto !== null
+                    ? 'Premi "Sospendi" per intervenire...'
+                    : 'Proponi una questione o rivolgiti ai partecipanti... (Invio per inviare)'
+                }
+                rows={2}
+                disabled={bloccato}
+                className="flex-1 bg-stone-900 border border-stone-700 rounded-lg px-3 py-2.5 text-sm text-stone-200 placeholder-stone-600 resize-none focus:outline-none focus:border-amber-700 disabled:opacity-50"
+              />
+              <button
+                onClick={() => inviaTema(inputTesto)}
+                disabled={!inputTesto.trim() || bloccato}
+                className="px-4 py-2.5 bg-amber-700 hover:bg-amber-600 text-stone-950 text-sm font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              >
+                Invia
+              </button>
+            </div>
+            {/* Dichiarazione */}
+            <p className="text-center text-[11px] text-stone-700 pt-2">
+              Voci sintetiche modellate sui pensatori reali. Parole generate da AI nello stile del loro pensiero: non rappresentano le loro opinioni reali.
+            </p>
+          </div>
+        </div>
+
+        {/* Console laterale */}
+        {!presentazione && (
+          <aside className="w-72 flex-shrink-0 border-l border-stone-800 overflow-y-auto hidden md:flex flex-col gap-5 px-3 py-4" style={{ backgroundColor: 'rgba(20, 17, 15, 0.6)' }}>
+            {/* Partecipanti */}
+            <section className="flex flex-col gap-1.5">
+              <h2 className="text-xs text-stone-500 uppercase tracking-wider mb-0.5">Partecipanti</h2>
+              {commensali.map(p => {
+                const stato = statiPensatori[p.id]
+                const isParlando = stato === STATI_PENSATORE.PARLANDO
+                const isSilenzioso = stato === STATI_PENSATORE.SILENZIOSO
+                return (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <span className={[
+                      'w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all',
+                      isParlando ? 'bg-amber-400 animate-pulse' : isSilenzioso ? 'bg-stone-800' : 'bg-stone-600',
+                    ].join(' ')} />
+                    <span className={[
+                      'text-sm font-serif flex-1 min-w-0 truncate',
+                      isParlando ? 'text-amber-200' : isSilenzioso ? 'text-stone-700 line-through' : 'text-stone-300',
+                    ].join(' ')}>
+                      {p.nome}
+                    </span>
+                    <button
+                      onClick={() => isSilenzioso ? riattiva(p.id) : silenzia(p.id)}
+                      disabled={isParlando}
+                      title={isSilenzioso ? 'Riammetti alla discussione' : 'Sospendi dalla discussione'}
+                      className="text-[11px] px-1.5 py-0.5 rounded border border-stone-800 text-stone-600 hover:border-stone-600 hover:text-stone-400 disabled:opacity-30 transition-colors flex-shrink-0"
+                    >
+                      {isSilenzioso ? 'riammetti' : 'sospendi'}
+                    </button>
+                  </div>
+                )
+              })}
+            </section>
+
+            {/* Richieste di intervento */}
+            <section className="flex flex-col gap-1.5">
+              <h2 className="text-xs text-stone-500 uppercase tracking-wider mb-0.5">Richieste di intervento</h2>
+              {coda.length === 0 && astenuti.length === 0 ? (
+                <p className="text-xs text-stone-700 italic">Nessuna richiesta in attesa.</p>
+              ) : (
+                <SignalQueue
+                  coda={coda}
+                  astenuti={astenuti}
+                  onRiordina={riordinaCoda}
+                  onRimuovi={rimuoviDaCoda}
+                  isRunning={isRunning}
+                />
+              )}
+            </section>
+
+            {/* Moderazione */}
+            <section className="flex flex-col gap-1.5">
+              <h2 className="text-xs text-stone-500 uppercase tracking-wider mb-0.5">Moderazione</h2>
+              <ModeratorControls
+                commensali={commensali}
+                statiPensatori={statiPensatori}
+                isRunning={isRunning}
+                pensatoreCorrente={pensatoreCorrente}
+                onInterrompi={interrompi}
+                onDaiParola={daiParola}
+                onDomandaDiretta={domandaDiretta}
+              />
+            </section>
+          </aside>
+        )}
+      </div>
+    </div>
+  )
+}

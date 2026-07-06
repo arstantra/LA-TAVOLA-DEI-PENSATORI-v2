@@ -74,4 +74,8 @@ export function buildCustomSystemPrompt(pensatore, altriCommensali, modalita, li
       linguaContesto = '\n\n## Lingua\nRispondi in italiano: è già la tua lingua madre.'
     } else {
       linguaContesto = '\n\n## Lingua (modalita lingua originale attiva)\nRispondi in ' + linguaNome + ' (' + linguaCodice + '): la tua lingua madre intellettuale. Comprendi l\'italiano ma rispondi nella tua lingua.'
-    
+    }
+  }
+
+  return base + contesto + modoContesto + linguaContesto + REGISTRO_SESSIONE
+}

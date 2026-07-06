@@ -200,4 +200,14 @@ export async function* streamRisposta({ pensatore, storia, altriCommensali, moda
         const parsed = JSON.parse(data)
         if (
           parsed.type === 'content_block_delta' &&
-        
+          parsed.delta?.type === 'text_delta' &&
+          parsed.delta.text
+        ) {
+          yield parsed.delta.text
+        }
+      } catch {
+        // chunk non valido, ignora
+      }
+    }
+  }
+}

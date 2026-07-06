@@ -42,4 +42,69 @@ export default function App() {
     setSchermata('sessione')
   }, [])
 
-  const riprendiSessione = useCallback((sessi
+  const riprendiSessione = useCallback((sessione) => {
+    const stati = {}
+    ;(sessione.commensali || []).forEach(p => { stati[p.id] = STATI_PENSATORE.ATTIVO })
+    setSessioneMeta({ id: sessione.id, nome: sessione.nome, data: sessione.data })
+    setCommensali(sessione.commensali || [])
+    setStatiPensatori(stati)
+    setStoria(sessione.messaggi || [])
+    setCoda([])
+    setIsRunning(false)
+    setSchermata('sessione')
+  }, [])
+
+  const tornaConfig = useCallback(() => {
+    setSchermata('config')
+    setCommensali([])
+    setStatiPensatori({})
+    setStoria([])
+    setCoda([])
+    setIsRunning(false)
+    setSessioneMeta(null)
+  }, [])
+
+  // Salvataggio automatico: ogni cambiamento della storia aggiorna l'archivio
+  useEffect(() => {
+    if (schermata !== 'sessione' || !sessioneMeta || storia.length === 0) return
+    const messaggi = storia.map(m =>
+      m.tipo === 'pensatore' && m.pensatore
+        ? {
+            ...m,
+            pensatore: {
+              id: m.pensatore.id,
+              nome: m.pensatore.nome,
+              voiceId: m.pensatore.voiceId || null,
+            },
+          }
+        : m
+    )
+    salvaSessione({
+      id: sessioneMeta.id,
+      nome: sessioneMeta.nome,
+      data: sessioneMeta.data,
+      commensali,
+      messaggi,
+      modalita: 'aperta',
+    })
+  }, [storia, schermata, sessioneMeta, commensali])
+
+  if (schermata === 'config') {
+    return <ConfigScreen onInizia={iniziaSessione} onRiprendi={riprendiSessione} />
+  }
+
+  return (
+    <SessionScreen
+      commensali={commensali}
+      statiPensatori={statiPensatori}
+      setStatiPensatori={setStatiPensatori}
+      storia={storia}
+      setStoria={setStoria}
+      coda={coda}
+      setCoda={setCoda}
+      isRunning={isRunning}
+      setIsRunning={setIsRunning}
+      onTornaConfig={tornaConfig}
+    />
+  )
+}

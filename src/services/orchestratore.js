@@ -129,4 +129,13 @@ export async function eseguiCoda({
           storiaMutabile.push({
             tipo: 'pensatore',
             pensatore,
-   
+            testo,
+            timestamp: Date.now(),
+          })
+        }
+        onPensatoreFine?.(pensatore, testo, interrotta)
+      },
+      abortSignal: getAbortSignal?.(pensatore.id),
+    })
+  }
+}

@@ -1,0 +1,16 @@
+# Dipendenze
+node_modules/
+
+# Build
+dist/
+
+# Chiavi API — MAI committare
+.env
+.env.*
+
+# File temporanei Vite
+vite.config.js.timestamp-*
+
+# Sistema
+.DS_Store
+Thumbs.db

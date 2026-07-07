@@ -28,6 +28,35 @@ const VOCI_PRESET = [
   { id: 'g5CIjZEefAph4nQFvHAz', nome: 'FR — Maschile A (Ethan)', lingua: 'fr' },
 ]
 
+// Limiti caratteri per campo
+const LIMITI = {
+  nome: 60,
+  anni: 20,
+  territorio: 80,
+  nazionalita: 30,
+  descrizione: 300,
+  citazione: 300,
+  profiloIntellettuale: 12000,
+}
+
+/** Contatore caratteri rimanenti sotto un campo. */
+function Contatore({ valore, max }) {
+  const rimanenti = max - (valore?.length || 0)
+  const colore =
+    rimanenti <= 0
+      ? 'text-red-500/80'
+      : rimanenti <= max * 0.1
+      ? 'text-amber-600/80'
+      : 'text-stone-700'
+  return (
+    <div className="flex justify-end mt-1">
+      <span className={`${colore} text-xs font-sans tabular-nums`}>
+        {rimanenti.toLocaleString('it-IT')} caratteri rimanenti
+      </span>
+    </div>
+  )
+}
+
 function nuovoPensatore() {
   return {
     id: 'custom_' + Date.now(),
@@ -51,6 +80,10 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
   const [errore, setErrore] = useState('')
 
   function aggiorna(campo, valore) {
+    // Tronca al limite del campo, se definito
+    if (LIMITI[campo] && valore.length > LIMITI[campo]) {
+      valore = valore.slice(0, LIMITI[campo])
+    }
     setForm(prev => {
       const next = { ...prev, [campo]: valore }
       if (campo === 'linguaOriginale') {
@@ -116,18 +149,22 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               <input
                 className={input}
                 placeholder="es. Italo Calvino"
+                maxLength={LIMITI.nome}
                 value={form.nome}
                 onChange={e => aggiorna('nome', e.target.value)}
               />
+              <Contatore valore={form.nome} max={LIMITI.nome} />
             </div>
             <div>
               <label className={label}>Anni</label>
               <input
                 className={input}
                 placeholder="es. 1923-1985"
+                maxLength={LIMITI.anni}
                 value={form.anni}
                 onChange={e => aggiorna('anni', e.target.value)}
               />
+              <Contatore valore={form.anni} max={LIMITI.anni} />
             </div>
           </div>
 
@@ -138,18 +175,22 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               <input
                 className={input}
                 placeholder="es. Letteratura, narrazione, semiotica"
+                maxLength={LIMITI.territorio}
                 value={form.territorio}
                 onChange={e => aggiorna('territorio', e.target.value)}
               />
+              <Contatore valore={form.territorio} max={LIMITI.territorio} />
             </div>
             <div>
               <label className={label}>Nazionalit&agrave;</label>
               <input
                 className={input}
                 placeholder="es. IT"
+                maxLength={LIMITI.nazionalita}
                 value={form.nazionalita}
                 onChange={e => aggiorna('nazionalita', e.target.value)}
               />
+              <Contatore valore={form.nazionalita} max={LIMITI.nazionalita} />
             </div>
           </div>
 
@@ -188,9 +229,11 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               className={input + ' resize-none'}
               rows={2}
               placeholder="1-2 frasi che descrivono il personaggio"
+              maxLength={LIMITI.descrizione}
               value={form.descrizione}
               onChange={e => aggiorna('descrizione', e.target.value)}
             />
+            <Contatore valore={form.descrizione} max={LIMITI.descrizione} />
           </div>
 
           {/* Citazione */}
@@ -199,9 +242,11 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
             <input
               className={input}
               placeholder="Una frase significativa del personaggio"
+              maxLength={LIMITI.citazione}
               value={form.citazione}
               onChange={e => aggiorna('citazione', e.target.value)}
             />
+            <Contatore valore={form.citazione} max={LIMITI.citazione} />
           </div>
 
           {/* Profilo intellettuale */}
@@ -216,18 +261,15 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               className={input + ' resize-y font-sans leading-relaxed'}
               rows={10}
               placeholder={'Incolla qui il profilo intellettuale generato da NotebookLM o scritto da te.\nMax 12.000 caratteri.'}
+              maxLength={LIMITI.profiloIntellettuale}
               value={form.profiloIntellettuale}
               onChange={e => aggiorna('profiloIntellettuale', e.target.value)}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-stone-700 text-xs font-sans">
-                {form.profiloIntellettuale.length} / 12.000 caratteri
+              <span className="text-stone-700 text-xs font-sans tabular-nums">
+                {form.profiloIntellettuale.length.toLocaleString('it-IT')} / {LIMITI.profiloIntellettuale.toLocaleString('it-IT')}
               </span>
-              {form.profiloIntellettuale.length > 12000 && (
-                <span className="text-amber-600/80 text-xs font-sans">
-                  Il testo verrà troncato
-                </span>
-              )}
+              <Contatore valore={form.profiloIntellettuale} max={LIMITI.profiloIntellettuale} />
             </div>
           </div>
 

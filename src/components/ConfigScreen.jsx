@@ -211,14 +211,10 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
 
         {/* Form pensatore custom */}
         {mostraFormCustom && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div className="bg-stone-900 rounded-xl border border-stone-700 w-full max-w-lg">
-              <FormPensatoreCustom
-                onAggiungi={aggiungiCustom}
-                onAnnulla={() => setMostraFormCustom(false)}
-              />
-            </div>
-          </div>
+          <FormPensatoreCustom
+            onSalva={aggiungiCustom}
+            onChiudi={() => setMostraFormCustom(false)}
+          />
         )}
       </main>
 

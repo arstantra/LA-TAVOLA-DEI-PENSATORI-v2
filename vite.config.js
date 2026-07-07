@@ -7,9 +7,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
 
-    // GitHub Pages: imposta il nome del repo in .env.production
-    // es: VITE_BASE_URL=/tavola-dei-pensatori/
-    base: env.VITE_BASE_URL || '/',
+    // Base relativa: funziona sia su github.io/<repo>/ sia su dominio custom.
+    // Sovrascrivibile con VITE_BASE_URL se servisse un path assoluto.
+    base: env.VITE_BASE_URL || './',
 
     build: {
       // Non svuota dist prima di buildare (evita conflitti con OneDrive)

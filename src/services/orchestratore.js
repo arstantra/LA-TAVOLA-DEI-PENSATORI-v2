@@ -29,9 +29,10 @@ export const STATI_PENSATORE = {
  * Raccoglie i segnali da tutti i pensatori attivi in parallelo.
  * I pensatori silenziosi vengono saltati.
  *
- * Restituisce { coda, astenuti }:
+ * Restituisce { coda, astenuti, errori }:
  *   coda:     segnali ordinati per urgenza, pronti per il moderatore
  *   astenuti: pensatori che hanno scelto di non intervenire (con eventuale motivo)
+ *   errori:   segnali falliti per problemi tecnici (chiave API, rete) — NON sono astensioni
  */
 export async function raccogliSegnali({ commensali, statiPensatori, storia, modalita, lingua }) {
   const attivi = commensali.filter(p => statiPensatori[p.id] !== STATI_PENSATORE.SILENZIOSO)
@@ -45,7 +46,8 @@ export async function raccogliSegnali({ commensali, statiPensatori, storia, moda
   const segnali = await Promise.all(promesse)
   return {
     coda: ordinaCoda(segnali),
-    astenuti: segnali.filter(s => !s.vuole_parlare && s.pensatore),
+    astenuti: segnali.filter(s => !s.vuole_parlare && !s.errore && s.pensatore),
+    errori: segnali.filter(s => s.errore),
   }
 }
 

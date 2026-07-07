@@ -249,6 +249,18 @@ export default function SessionScreen({
       setCaricandoSegnali(false)
       setAstenuti(risultato.astenuti)
 
+      // Errori tecnici (chiave API, rete): non sono astensioni, vanno segnalati
+      if (risultato.coda.length === 0 && risultato.errori?.length > 0) {
+        const dettaglio = risultato.errori[0].errore
+        aggiungiMessaggio({
+          tipo: 'sistema',
+          testo: 'Impossibile contattare i pensatori — ' + dettaglio +
+            ' Controlla le chiavi API dal pulsante "Chiavi API" nella schermata iniziale.',
+          timestamp: Date.now(),
+        })
+        return
+      }
+
       if (risultato.coda.length === 0) {
         aggiungiMessaggio({
           tipo: 'sistema',
@@ -256,6 +268,16 @@ export default function SessionScreen({
           timestamp: Date.now(),
         })
         return
+      }
+
+      if (risultato.errori?.length > 0) {
+        aggiungiMessaggio({
+          tipo: 'sistema',
+          testo: 'Attenzione: ' + risultato.errori.length + ' pensator' +
+            (risultato.errori.length === 1 ? 'e non ha' : 'i non hanno') +
+            ' potuto rispondere (' + risultato.errori[0].errore + ')',
+          timestamp: Date.now(),
+        })
       }
 
       setCoda(risultato.coda)
@@ -391,9 +413,12 @@ export default function SessionScreen({
       setAstenuti(nuovoRisultato.astenuti)
 
       if (nuovoRisultato.coda.length === 0 || stopAutoRef.current) {
+        const perErrore = !stopAutoRef.current && nuovoRisultato.errori?.length > 0
         aggiungiMessaggio({
           tipo: 'sistema',
-          testo: 'La discussione si esaurisce. Proponi una nuova questione per riprendere.',
+          testo: perErrore
+            ? 'Impossibile contattare i pensatori — ' + nuovoRisultato.errori[0].errore
+            : 'La discussione si esaurisce. Proponi una nuova questione per riprendere.',
           timestamp: Date.now(),
         })
         stopAutoRef.current = true

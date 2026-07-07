@@ -108,8 +108,20 @@ export async function chiediSegnale({ pensatore, storia, altriCommensali, modali
   const systemPrompt = systemBase + '\n' + ISTRUZIONE_SEGNALE
   const messages = buildMessages(storia, pensatore.id)
 
+  const silenzio = (errore = null) => ({
+    pensatoreId: pensatore.id, pensatore,
+    vuole_parlare: false, urgenza: null, tipo: null, perche: null,
+    errore,
+  })
+
   if (messages.length === 0 || messages[messages.length - 1].role === 'assistant') {
-    return { pensatoreId: pensatore.id, pensatore, vuole_parlare: false, urgenza: null, tipo: null, perche: null }
+    return silenzio()
+  }
+
+  // In produzione, senza chiave la chiamata fallirebbe comunque:
+  // meglio un errore chiaro subito.
+  if (IS_PROD && !getChiaveAnthropic()) {
+    return silenzio('Chiave API Anthropic non configurata.')
   }
 
   try {
@@ -124,12 +136,20 @@ export async function chiediSegnale({ pensatore, storia, altriCommensali, modali
       }),
     })
 
-    if (!response.ok) return { pensatoreId: pensatore.id, pensatore, vuole_parlare: false, urgenza: null, tipo: null, perche: null }
+    if (!response.ok) {
+      let dettaglio = ''
+      try {
+        const errData = await response.json()
+        dettaglio = errData.error?.message ? ': ' + errData.error.message : ''
+      } catch { /* corpo non JSON */ }
+      if (response.status === 401) return silenzio('Chiave API non valida o revocata (401).')
+      return silenzio('Errore API ' + response.status + dettaglio)
+    }
 
     const data = await response.json()
     const testo = data.content[0]?.text?.trim() || ''
     const jsonMatch = testo.match(/\{.*\}/)
-    if (!jsonMatch) return { pensatoreId: pensatore.id, pensatore, vuole_parlare: false, urgenza: null, tipo: null, perche: null }
+    if (!jsonMatch) return silenzio()
 
     const segnale = JSON.parse(jsonMatch[0])
     return {
@@ -139,9 +159,10 @@ export async function chiediSegnale({ pensatore, storia, altriCommensali, modali
       urgenza: segnale.urgenza || null,
       tipo: segnale.tipo || null,
       perche: segnale.perche || null,
+      errore: null,
     }
-  } catch {
-    return { pensatoreId: pensatore.id, pensatore, vuole_parlare: false, urgenza: null, tipo: null, perche: null }
+  } catch (err) {
+    return silenzio('Errore di rete: ' + (err?.message || 'connessione fallita'))
   }
 }
 

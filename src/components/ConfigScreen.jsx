@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { PENSATORI } from '../data/pensatori.js'
 import FormPensatoreCustom from './FormPensatoreCustom.jsx'
+import PannelloChiavi from './PannelloChiavi.jsx'
+import { chiaveAnthropicPresente } from '../services/chiavi.js'
 import {
   caricaSessioni,
   eliminaSessione,
@@ -22,10 +24,14 @@ import {
 export default function ConfigScreen({ onInizia, onRiprendi }) {
   const [selezionati, setSelezionati] = useState([])
   const [mostraFormCustom, setMostraFormCustom] = useState(false)
+  const [pensatoreInModifica, setPensatoreInModifica] = useState(null)
+  const [mostraChiavi, setMostraChiavi] = useState(false)
+  const [chiaveOk, setChiaveOk] = useState(() => chiaveAnthropicPresente())
   const [customPensatori, setCustomPensatori] = useState(() => caricaPensatoriCustom())
   const [sessioni, setSessioni] = useState(() => caricaSessioni())
 
   const tuttePensatori = [...PENSATORI, ...customPensatori]
+  const IS_PROD = import.meta.env.PROD
 
   function toggleSelezione(pensatore) {
     setSelezionati(prev => {
@@ -36,14 +42,29 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
     })
   }
 
-  function aggiungiCustom(pensatore) {
+  function salvaCustom(pensatore) {
+    const inModifica = !!pensatoreInModifica
     salvaPensatoreCustom(pensatore)
     setCustomPensatori(caricaPensatoriCustom())
     setMostraFormCustom(false)
+    setPensatoreInModifica(null)
     setSelezionati(prev => {
-      if (prev.length >= 5) return prev
+      const idx = prev.findIndex(p => p.id === pensatore.id)
+      if (idx >= 0) {
+        // Già selezionato: aggiorna in place
+        const next = [...prev]
+        next[idx] = pensatore
+        return next
+      }
+      if (inModifica || prev.length >= 5) return prev
       return [...prev, pensatore]
     })
+  }
+
+  function modificaCustom(e, pensatore) {
+    e.stopPropagation()
+    setPensatoreInModifica(pensatore)
+    setMostraFormCustom(true)
   }
 
   function rimuoviCustom(e, pensatoreId) {
@@ -74,14 +95,44 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col">
       {/* Header */}
-      <header className="border-b border-stone-800 px-6 py-5">
-        <h1 className="text-2xl font-serif tracking-wide text-amber-100">
-          La Tavola dei Pensatori
-        </h1>
-        <p className="text-sm text-stone-500 mt-1">
-          Scegli da 2 a 5 partecipanti per la sessione
-        </p>
+      <header className="border-b border-stone-800 px-6 py-5 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-serif tracking-wide text-amber-100">
+            La Tavola dei Pensatori
+          </h1>
+          <p className="text-sm text-stone-500 mt-1">
+            Scegli da 2 a 5 partecipanti per la sessione
+          </p>
+        </div>
+        <button
+          onClick={() => setMostraChiavi(true)}
+          title="Configura e verifica le chiavi API"
+          className="flex items-center gap-2 text-xs px-3 py-2 rounded border border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200 transition-colors flex-shrink-0"
+        >
+          <span
+            className={[
+              'w-2 h-2 rounded-full',
+              !IS_PROD ? 'bg-sky-400' : chiaveOk ? 'bg-emerald-400' : 'bg-red-500',
+            ].join(' ')}
+          />
+          Chiavi API
+        </button>
       </header>
+
+      {/* Avviso chiave mancante (solo produzione) */}
+      {IS_PROD && !chiaveOk && (
+        <div className="bg-red-950/40 border-b border-red-900/50 px-6 py-3 text-sm text-red-300 flex items-center justify-between gap-4 flex-wrap">
+          <span>
+            Nessuna chiave API Anthropic configurata: i pensatori non potranno rispondere.
+          </span>
+          <button
+            onClick={() => setMostraChiavi(true)}
+            className="text-xs px-3 py-1.5 rounded border border-red-700 text-red-200 hover:bg-red-900/40 transition-colors"
+          >
+            Configura ora
+          </button>
+        </div>
+      )}
 
       {/* Griglia pensatori */}
       <main className="flex-1 px-6 py-6">
@@ -116,16 +167,28 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
                       </span>
                     )}
                     {p.custom && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => rimuoviCustom(e, p.id)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') rimuoviCustom(e, p.id) }}
-                        title="Elimina questo pensatore personalizzato"
-                        className="text-stone-600 hover:text-red-400 text-sm leading-none mt-0.5 cursor-pointer"
-                      >
-                        &times;
-                      </span>
+                      <>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => modificaCustom(e, p)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') modificaCustom(e, p) }}
+                          title="Modifica questo pensatore personalizzato"
+                          className="text-stone-600 hover:text-amber-400 text-sm leading-none mt-0.5 cursor-pointer"
+                        >
+                          ✎
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => rimuoviCustom(e, p.id)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') rimuoviCustom(e, p.id) }}
+                          title="Elimina questo pensatore personalizzato"
+                          className="text-stone-600 hover:text-red-400 text-sm leading-none mt-0.5 cursor-pointer"
+                        >
+                          &times;
+                        </span>
+                      </>
                     )}
                   </span>
                 </div>
@@ -209,11 +272,23 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
           </div>
         )}
 
-        {/* Form pensatore custom */}
+        {/* Form pensatore custom (creazione o modifica) */}
         {mostraFormCustom && (
           <FormPensatoreCustom
-            onSalva={aggiungiCustom}
-            onChiudi={() => setMostraFormCustom(false)}
+            key={pensatoreInModifica?.id || 'nuovo'}
+            pensatore={pensatoreInModifica}
+            onSalva={salvaCustom}
+            onChiudi={() => { setMostraFormCustom(false); setPensatoreInModifica(null) }}
+          />
+        )}
+
+        {/* Pannello chiavi API */}
+        {mostraChiavi && (
+          <PannelloChiavi
+            onChiudi={() => {
+              setMostraChiavi(false)
+              setChiaveOk(chiaveAnthropicPresente())
+            }}
           />
         )}
       </main>

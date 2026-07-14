@@ -112,7 +112,7 @@ src/
     chiavi.js                 — gestione localStorage API keys (da v1)
     sessioni.js               — persistenza sessioni (da v1)
   data/
-    pensatori.js              — dati 10 pensatori + voiceId (da v1)
+    pensatori.js              — dati 10 pensatori + voiceId + TAG_LIST e tag tematici (da v1, esteso)
     prompts.js                — system prompt curati (da v1, il vero patrimonio)
     customPrompts.js          — system prompt pensatori custom (da v1)
     orchestratorePrompt.js    — system prompt dell'orchestratore (NUOVO)

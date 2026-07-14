@@ -83,7 +83,7 @@ index.html                            copiato da v1, invariato
 src/index.css                         copiato da v1
 src/main.jsx                          copiato da v1
 
-src/data/pensatori.js                 10 pensatori predefiniti con voiceId
+src/data/pensatori.js                 10 pensatori predefiniti con voiceId e tag tematici (+ TAG_LIST)
 src/data/prompts.js                   system prompt curati per tutti e 10
 src/data/customPrompts.js             system prompt per pensatori custom
 src/data/orchestratorePrompt.js       ISTRUZIONE_SEGNALE + funzione ordinaCoda
@@ -268,6 +268,26 @@ La cartella v1 (solo lettura riferimento) è:
 | berry | Wendell Berry | Terra, comunità, modernità |
 | freire | Paulo Freire | Educazione degli oppressi, coscientizzazione |
 | schumacher | Ernst F. Schumacher | Economia umana, locale, Small is Beautiful |
+
+### Tavoli tematici (tag)
+
+Ogni pensatore ha un campo `tags` (vedi `TAG_LIST` in `pensatori.js`):
+Design, Educazione, Economia, Ecologia, Tecnologia, Società, Filosofia.
+La ConfigScreen mostra chip filtro sopra la griglia ("Tavoli tematici");
+il FormPensatoreCustom permette di assegnare tag anche ai pensatori custom.
+
+| id | tags |
+|---|---|
+| faggin | tecnologia, filosofia |
+| illich | educazione, societa |
+| fukuoka | ecologia, filosofia |
+| sen | economia, societa |
+| alexander | design, filosofia |
+| morin | educazione, filosofia |
+| shiva | ecologia, societa |
+| berry | ecologia, economia |
+| freire | educazione, societa |
+| schumacher | economia, ecologia |
 
 Tensioni più produttive per i test:
 - **Faggin ↔ Morin**: coscienza irriducibile vs emergente da complessità

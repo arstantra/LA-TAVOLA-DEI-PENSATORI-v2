@@ -18,9 +18,23 @@ export const VOCI_PRESET = new Set([
   'wViXBPUzp2ZZixB1xQuM', // Michael
 ])
 
+
+// Tag tematici per i tavoli. Un pensatore puo' avere piu' tag.
+// I filtri nella ConfigScreen si basano su questa lista.
+export const TAG_LIST = [
+  { id: 'design', nome: 'Design' },
+  { id: 'educazione', nome: 'Educazione' },
+  { id: 'economia', nome: 'Economia' },
+  { id: 'ecologia', nome: 'Ecologia' },
+  { id: 'tecnologia', nome: 'Tecnologia' },
+  { id: 'societa', nome: 'Societ\u00e0' },
+  { id: 'filosofia', nome: 'Filosofia' },
+]
+
 export const PENSATORI = [
   {
     id: 'faggin',
+    tags: ['tecnologia', 'filosofia'],
     nome: 'Federico Faggin',
     territorio: 'Coscienza, tecnologia, identità',
     anni: '1941 —',
@@ -33,6 +47,7 @@ export const PENSATORI = [
   },
   {
     id: 'illich',
+    tags: ['educazione', 'societa'],
     nome: 'Ivan Illich',
     territorio: 'Critica istituzioni, autonomia, convivialità',
     anni: '1926 — 2002',
@@ -45,6 +60,7 @@ export const PENSATORI = [
   },
   {
     id: 'fukuoka',
+    tags: ['ecologia', 'filosofia'],
     nome: 'Masanobu Fukuoka',
     territorio: 'Natura, non-fare, agricoltura come filosofia',
     anni: '1913 — 2008',
@@ -57,6 +73,7 @@ export const PENSATORI = [
   },
   {
     id: 'sen',
+    tags: ['economia', 'societa'],
     nome: 'Amartya Sen',
     territorio: 'Libertà, giustizia, capacità umane',
     anni: '1933 —',
@@ -69,6 +86,7 @@ export const PENSATORI = [
   },
   {
     id: 'alexander',
+    tags: ['design', 'filosofia'],
     nome: 'Christopher Alexander',
     territorio: 'Bellezza, luoghi, pattern del vivere',
     anni: '1936 — 2022',
@@ -81,6 +99,7 @@ export const PENSATORI = [
   },
   {
     id: 'morin',
+    tags: ['educazione', 'filosofia'],
     nome: 'Edgar Morin',
     territorio: 'Complessità, educazione, pensiero connettivo',
     anni: '1921 —',
@@ -93,6 +112,7 @@ export const PENSATORI = [
   },
   {
     id: 'shiva',
+    tags: ['ecologia', 'societa'],
     nome: 'Vandana Shiva',
     territorio: 'Biodiversità, semi, critica agricoltura industriale',
     anni: '1952 —',
@@ -105,6 +125,7 @@ export const PENSATORI = [
   },
   {
     id: 'berry',
+    tags: ['ecologia', 'economia'],
     nome: 'Wendell Berry',
     territorio: 'Terra, comunità, modernità',
     anni: '1934 —',
@@ -117,6 +138,7 @@ export const PENSATORI = [
   },
   {
     id: 'freire',
+    tags: ['educazione', 'societa'],
     nome: 'Paulo Freire',
     territorio: 'Educazione degli oppressi, coscientizzazione',
     anni: '1921 — 1997',
@@ -129,6 +151,7 @@ export const PENSATORI = [
   },
   {
     id: 'schumacher',
+    tags: ['economia', 'ecologia'],
     nome: 'Ernst F. Schumacher',
     territorio: 'Economia umana, locale, Small is Beautiful',
     anni: '1911 — 1977',

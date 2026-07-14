@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TAG_LIST } from '../data/pensatori.js'
 
 const LINGUE = [
   { codice: 'it', nome: 'Italiano' },
@@ -71,6 +72,8 @@ function nuovoPensatore() {
     linguaOriginale: 'it',
     linguaNome: 'Italiano',
     profiloIntellettuale: '',
+    notebookUrl: '',
+    tags: [],
   }
 }
 
@@ -93,6 +96,16 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
     })
   }
 
+  function toggleTag(tagId) {
+    setForm(prev => {
+      const tags = prev.tags || []
+      const next = tags.includes(tagId)
+        ? tags.filter(t => t !== tagId)
+        : [...tags, tagId]
+      return { ...prev, tags: next }
+    })
+  }
+
   function handleSalva() {
     if (!form.nome.trim()) {
       setErrore('Il nome del pensatore è obbligatorio.')
@@ -104,6 +117,7 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
       id: form.id || ('custom_' + Date.now()),
       custom: true,
       nome: form.nome.trim(),
+      tags: form.tags || [],
     })
   }
 
@@ -124,13 +138,18 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
       <div className="w-full max-w-2xl bg-stone-950 border border-stone-700 rounded-sm max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-800">
-          <h2
-            className="text-stone-100 text-lg leading-snug"
-            style={{ fontFamily: "'EB Garamond', serif" }}
-          >
-            {pensatore ? 'Modifica pensatore' : 'Crea pensatore'}
-          </h2>
+        <div className="flex items-start justify-between px-6 py-4 border-b border-stone-800">
+          <div>
+            <h2
+              className="text-stone-100 text-lg leading-snug"
+              style={{ fontFamily: "'EB Garamond', serif" }}
+            >
+              {pensatore ? 'Modifica pensatore' : 'Crea pensatore'}
+            </h2>
+            <p className="text-stone-500 text-xs font-sans mt-1">
+              Questa parte funziona al meglio insieme a NotebookLM — vedi il riquadro qui sotto.
+            </p>
+          </div>
           <button
             onClick={onChiudi}
             className="text-stone-500 hover:text-stone-200 transition-colors text-xl leading-none px-1"
@@ -141,6 +160,82 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
 
         {/* Body */}
         <div className="px-6 py-6 flex flex-col gap-5">
+
+          {/* NotebookLM */}
+          <div className="border border-amber-900/40 bg-amber-950/10 rounded-sm px-4 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-200/70 text-xs font-sans tracking-widest uppercase">
+                Prepara il profilo con NotebookLM
+              </span>
+              <a
+                href="https://notebooklm.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-200/60 hover:text-amber-200 text-xs font-sans transition-colors whitespace-nowrap"
+              >
+                Apri NotebookLM ↗
+              </a>
+            </div>
+            <p className="text-stone-400 text-xs font-sans leading-relaxed mt-2">
+              NotebookLM risponde basandosi solo sulle fonti che carichi (libri, articoli,
+              PDF, video): il profilo del pensatore risulta così fedele ai testi originali,
+              senza invenzioni. Crea un notebook per il pensatore, carica le fonti, genera
+              il profilo e incollalo nel campo &ldquo;Profilo intellettuale&rdquo; in fondo
+              a questa scheda.
+            </p>
+            <button
+              onClick={() => setHintsAperte(prev => !prev)}
+              className="flex items-center gap-2 mt-3 text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              <span className="text-xs font-sans tracking-widest uppercase">
+                Prompt consigliati
+              </span>
+              <span className="text-xs opacity-60">{hintsAperte ? '▲' : '▼'}</span>
+            </button>
+            {hintsAperte && (
+              <div className="mt-2">
+                <p className="text-stone-500 text-xs font-sans leading-relaxed mb-2">
+                  Usa questi prompt nella chat di NotebookLM:
+                </p>
+                <ol className="flex flex-col gap-2 list-decimal list-inside">
+                  {promptsNLM.map((p, i) => (
+                    <li key={i} className="text-stone-400 text-xs font-sans leading-snug">
+                      &ldquo;{p}&rdquo;
+                    </li>
+                  ))}
+                </ol>
+                <p className="text-stone-600 text-xs font-sans mt-3 leading-relaxed">
+                  Copia le risposte (anche parziali) nel campo &ldquo;Profilo intellettuale&rdquo;.
+                  Più materiale dai, meglio il personaggio risponde.
+                </p>
+              </div>
+            )}
+            <div className="mt-4">
+              <label className={label}>Link al notebook di questo pensatore</label>
+              <div className="flex gap-2">
+                <input
+                  className={input}
+                  type="url"
+                  placeholder="https://notebooklm.google.com/notebook/..."
+                  value={form.notebookUrl || ''}
+                  onChange={e => aggiorna('notebookUrl', e.target.value)}
+                />
+                {(form.notebookUrl || '').trim() && (
+                  <a
+                    href={form.notebookUrl.trim()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 px-3 py-2 border border-stone-700 rounded-sm text-stone-400 hover:text-amber-200/80 hover:border-amber-200/40 text-sm font-sans transition-colors"
+                  >
+                    Apri ↗
+                  </a>
+                )}
+              </div>
+              <p className="text-stone-600 text-xs font-sans mt-1.5">
+                Salvato nella scheda: lo ritrovi qui quando vuoi aggiornare il profilo.
+              </p>
+            </div>
+          </div>
 
           {/* Nome + Anni */}
           <div className="grid grid-cols-2 gap-4">
@@ -192,6 +287,34 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               />
               <Contatore valore={form.nazionalita} max={LIMITI.nazionalita} />
             </div>
+          </div>
+
+          {/* Tag tematici */}
+          <div>
+            <label className={label}>Tag tematici</label>
+            <div className="flex flex-wrap gap-2">
+              {TAG_LIST.map(t => {
+                const attivo = (form.tags || []).includes(t.id)
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => toggleTag(t.id)}
+                    className={[
+                      'text-xs px-3 py-1.5 rounded-full border transition-colors',
+                      attivo
+                        ? 'border-amber-500 bg-amber-950/50 text-amber-200'
+                        : 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200',
+                    ].join(' ')}
+                  >
+                    {t.nome}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-stone-600 text-xs font-sans mt-1.5">
+              Servono per i filtri dei tavoli tematici nella schermata di selezione.
+            </p>
           </div>
 
           {/* Lingua + Voce */}
@@ -271,39 +394,6 @@ export default function FormPensatoreCustom({ pensatore, onSalva, onChiudi }) {
               </span>
               <Contatore valore={form.profiloIntellettuale} max={LIMITI.profiloIntellettuale} />
             </div>
-          </div>
-
-          {/* NotebookLM hints */}
-          <div className="border border-stone-800 rounded-sm overflow-hidden">
-            <button
-              onClick={() => setHintsAperte(prev => !prev)}
-              className="w-full flex items-center justify-between px-4 py-3 text-stone-500 hover:text-stone-300 transition-colors text-left"
-            >
-              <span className="text-xs font-sans tracking-widest uppercase">
-                Come usare NotebookLM
-              </span>
-              <span className="text-xs opacity-60">{hintsAperte ? '▲' : '▼'}</span>
-            </button>
-            {hintsAperte && (
-              <div className="px-4 pb-5 border-t border-stone-800">
-                <p className="text-stone-500 text-xs font-sans leading-relaxed mt-3 mb-3">
-                  Vai su <span className="text-amber-200/50">notebooklm.google.com</span>, crea un nuovo notebook,
-                  carica le fonti del personaggio (PDF, link YouTube, testi).
-                  Poi usa questi prompt nella chat di NotebookLM:
-                </p>
-                <ol className="flex flex-col gap-2 list-decimal list-inside">
-                  {promptsNLM.map((p, i) => (
-                    <li key={i} className="text-stone-400 text-xs font-sans leading-snug">
-                      &ldquo;{p}&rdquo;
-                    </li>
-                  ))}
-                </ol>
-                <p className="text-stone-600 text-xs font-sans mt-3 leading-relaxed">
-                  Copia le risposte (anche parziali) nel campo &ldquo;Profilo intellettuale&rdquo; qui sopra.
-                  Più materiale dai, meglio il personaggio risponde.
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Errore */}

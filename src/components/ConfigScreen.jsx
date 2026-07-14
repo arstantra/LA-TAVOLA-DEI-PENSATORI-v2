@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PENSATORI } from '../data/pensatori.js'
+import { PENSATORI, TAG_LIST } from '../data/pensatori.js'
 import FormPensatoreCustom from './FormPensatoreCustom.jsx'
 import PannelloChiavi from './PannelloChiavi.jsx'
 import { chiaveAnthropicPresente } from '../services/chiavi.js'
@@ -29,8 +29,12 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
   const [chiaveOk, setChiaveOk] = useState(() => chiaveAnthropicPresente())
   const [customPensatori, setCustomPensatori] = useState(() => caricaPensatoriCustom())
   const [sessioni, setSessioni] = useState(() => caricaSessioni())
+  const [tagAttivo, setTagAttivo] = useState(null)
 
   const tuttePensatori = [...PENSATORI, ...customPensatori]
+  const pensatoriVisibili = tagAttivo
+    ? tuttePensatori.filter(p => (p.tags || []).includes(tagAttivo))
+    : tuttePensatori
   const IS_PROD = import.meta.env.PROD
 
   function toggleSelezione(pensatore) {
@@ -136,8 +140,37 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
 
       {/* Griglia pensatori */}
       <main className="flex-1 px-6 py-6">
+        {/* Filtri tematici */}
+        <div className="max-w-7xl mx-auto mb-5 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-stone-600 uppercase tracking-wider mr-1">Tavoli tematici</span>
+          <button
+            onClick={() => setTagAttivo(null)}
+            className={[
+              'text-xs px-3 py-1.5 rounded-full border transition-colors',
+              tagAttivo === null
+                ? 'border-amber-500 bg-amber-950/50 text-amber-200'
+                : 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200',
+            ].join(' ')}
+          >
+            Tutti
+          </button>
+          {TAG_LIST.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTagAttivo(prev => (prev === t.id ? null : t.id))}
+              className={[
+                'text-xs px-3 py-1.5 rounded-full border transition-colors',
+                tagAttivo === t.id
+                  ? 'border-amber-500 bg-amber-950/50 text-amber-200'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-500 hover:text-stone-200',
+              ].join(' ')}
+            >
+              {t.nome}
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
-          {tuttePensatori.map(p => {
+          {pensatoriVisibili.map(p => {
             const isSelezionato = selezionati.find(s => s.id === p.id)
             const isDisabilitato = !isSelezionato && selezionati.length >= 5
             return (
@@ -205,6 +238,21 @@ export default function ConfigScreen({ onInizia, onRiprendi }) {
                   <p className="text-xs text-stone-500 mt-2 italic leading-relaxed">
                     {p.citazione}
                   </p>
+                )}
+                {(p.tags || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {p.tags.map(tid => {
+                      const t = TAG_LIST.find(x => x.id === tid)
+                      return (
+                        <span
+                          key={tid}
+                          className="text-[10px] px-1.5 py-0.5 rounded border border-stone-800 text-stone-500"
+                        >
+                          {t ? t.nome : tid}
+                        </span>
+                      )
+                    })}
+                  </div>
                 )}
               </button>
             )
